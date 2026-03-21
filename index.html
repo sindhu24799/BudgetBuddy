@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BudgetBuddy - Personal Finance Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <!-- Auth Container -->
+    <div id="auth-container" class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>💰 BudgetBuddy</h1>
+                <p class="auth-subtitle">Your Personal Finance Tracker</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <h2>Login</h2>
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Login</button>
+                <p class="auth-switch">Don't have an account? <a href="#" id="show-register">Sign up</a></p>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form hidden">
+                <h2>Create Account</h2>
+                <div class="form-group">
+                    <label for="register-name">Name</label>
+                    <input type="text" id="register-name" required placeholder="Your name">
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" required placeholder="At least 6 characters">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Sign Up</button>
+                <p class="auth-switch">Already have an account? <a href="#" id="show-login">Login</a></p>
+            </form>
+
+            <div id="auth-error" class="error-message hidden"></div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app-container" class="app-container hidden">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>💰 BudgetBuddy</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#" data-page="dashboard" class="nav-link active">📊 Dashboard</a></li>
+                <li><a href="#" data-page="transactions" class="nav-link">💳 Transactions</a></li>
+                <li><a href="#" data-page="add-transaction" class="nav-link">➕ Add Transaction</a></li>
+                <li><a href="#" data-page="budgets" class="nav-link">🎯 Budgets</a></li>
+                <li><a href="#" data-page="trends" class="nav-link">📈 Trends</a></li>
+                <li><a href="#" data-page="export" class="nav-link">📥 Export</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <span id="user-name">User</span>
+                </div>
+                <button id="logout-btn" class="btn btn-secondary btn-sm">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Month Selector -->
+            <div class="month-selector">
+                <label for="month-select">Select Month:</label>
+                <select id="month-select"></select>
+            </div>
+
+            <!-- Dashboard Page -->
+            <section id="dashboard-page" class="page active">
+                <h2>Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card stat-income">
+                        <div class="stat-icon">💵</div>
+                        <div class="stat-info">
+                            <h3>Total Income</h3>
+                            <p id="total-income" class="stat-value">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-expense">
+                        <div class="stat-icon">💸</div>
+                        <div class="stat-info">
+                            <h3>Total Expenses</h3>
+                            <p id="total-expenses" class="stat-value">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-balance">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <h3>Net Balance</h3>
+                            <p id="net-balance" class="stat-value">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-transactions">
+                        <div class="stat-icon">📝</div>
+                        <div class="stat-info">
+                            <h3>Transactions</h3>
+                            <p id="transaction-count" class="stat-value">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Income vs Expenses</h3>
+                        <canvas id="income-expense-chart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Spending by Category</h3>
+                        <canvas id="category-chart"></canvas>
+                    </div>
+                    <div class="chart-card full-width">
+                        <h3>Daily Spending Trend</h3>
+                        <canvas id="daily-chart"></canvas>
+                    </div>
+                </div>
+
+                <div id="budget-alerts" class="budget-alerts"></div>
+            </section>
+
+            <!-- Transactions Page -->
+            <section id="transactions-page" class="page">
+                <h2>Transactions</h2>
+                <div class="transactions-controls">
+                    <div class="search-box">
+                        <input type="text" id="transaction-search" placeholder="Search transactions...">
+                    </div>
+                    <div class="filter-box">
+                        <select id="transaction-filter">
+                            <option value="">All Types</option>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-body"></tbody>
+                    </table>
+                </div>
+                <p id="no-transactions" class="no-data hidden">No transactions found.</p>
+            </section>
+
+            <!-- Add Transaction Page -->
+            <section id="add-transaction-page" class="page">
+                <h2>Add Transaction</h2>
+                <form id="transaction-form" class="transaction-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="trans-type">Type *</label>
+                            <select id="trans-type" required>
+                                <option value="">Select Type</option>
+                                <option value="expense">Expense</option>
+                                <option value="income">Income</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="trans-amount">Amount *</label>
+                            <input type="number" id="trans-amount" step="0.01" min="0.01" required placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="trans-description">Description *</label>
+                            <input type="text" id="trans-description" required placeholder="What was this for?">
+                        </div>
+                        <div class="form-group">
+                            <label for="trans-date">Date *</label>
+                            <input type="date" id="trans-date" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="trans-category">Category *</label>
+                        <select id="trans-category" required>
+                            <option value="">Select Category</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="trans-notes">Notes (Optional)</label>
+                        <textarea id="trans-notes" rows="3" placeholder="Any additional notes..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Add Transaction</button>
+                        <button type="reset" class="btn btn-secondary">Clear</button>
+                    </div>
+                    <div id="form-message" class="form-message hidden"></div>
+                </form>
+            </section>
+
+            <!-- Budgets Page -->
+            <section id="budgets-page" class="page">
+                <h2>Monthly Budgets</h2>
+                <div class="budget-form-card">
+                    <h3>Set a Budget</h3>
+                    <form id="budget-form" class="budget-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="budget-category">Category *</label>
+                                <select id="budget-category" required>
+                                    <option value="">Select Category</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="budget-amount">Monthly Limit *</label>
+                                <input type="number" id="budget-amount" step="0.01" min="0.01" required
+                                    placeholder="0.00">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Budget</button>
+                    </form>
+                </div>
+                <div id="budgets-list" class="budgets-list"></div>
+            </section>
+
+            <!-- Trends Page -->
+            <section id="trends-page" class="page">
+                <h2>Financial Trends</h2>
+                <div class="charts-grid">
+                    <div class="chart-card full-width">
+                        <h3>6-Month Income vs Expenses</h3>
+                        <canvas id="trends-chart"></canvas>
+                    </div>
+                    <div class="chart-card full-width">
+                        <h3>Category Spending (Current Month)</h3>
+                        <canvas id="category-trends-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Export Page -->
+            <section id="export-page" class="page">
+                <h2>Export Data</h2>
+                <div class="export-cards">
+                    <div class="export-card">
+                        <div class="export-icon">📄</div>
+                        <h3>CSV Export</h3>
+                        <p>Download your transactions as a CSV file that opens in Excel or Google Sheets.</p>
+                        <button id="export-csv-btn" class="btn btn-primary">Download CSV</button>
+                    </div>
+                    <div class="export-card">
+                        <div class="export-icon">📦</div>
+                        <h3>JSON Export</h3>
+                        <p>Download your transactions as a JSON file for backup or import elsewhere.</p>
+                        <button id="export-json-btn" class="btn btn-primary">Download JSON</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+
+</html>
